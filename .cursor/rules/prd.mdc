@@ -1,0 +1,181 @@
+---
+description: Product Requirements Document
+globs: 
+alwaysApply: true
+---
+# DinnerNotOnYourOwn.com
+
+**Product Vision:** 
+A practical tool for conference attendees to coordinate dinner plans near their live location, demonstrating the power of rapid development using modern tools.
+
+## Roadmap
+[] Phase 1
+[] Phase 2
+[] Phase 3
+[] Phase 4
+[] Phase 5
+
+Notes:
+Do one phase at a time. Never start another phase until the current one is complete. We can perform steps within a phase in paralell.
+
+## Implementation plan
+
+### Phase 1 - Project Setup
+1. Pull the latest Epic Stack with `npx create-epic-app@latest`
+2. Make the app our own
+  2.1. Remove the note related routes in users/$username/
+  2.2. Update Any references to Epic Notes to our app name
+  2.3. Update any email templates to use our domain (make sure we no longer send any emails from the epicstack.dev domain, but rather send from our new domain)
+3. Add required API Keys (look at the [Required APIs](mdc:#required-apis))
+  3.1. Add required placeholders to .env.example (because it is used for tests)
+  3.2. Add required placeholders to .env and ask me to update them with real values
+  3.2. Once I've added the real keys to .env, deploy them to Fly with `fly secrets set`
+
+### Phase 2 - Data Fetching & Storage
+1. Connect to our custom domain via Cloudflare
+2. Add required models to Prisma schema (look at [Database Schema](mdc:#database-schema))
+3. Implement API integrations (look at the [Required APIs](mdc:#required-apis))
+4. Add required Resource routes (look at [Core Features](mdc:#core-features)) (make sure to follow [Established rules and patterns](mdc:#established-rules-and-patterns))
+5. Add placeholder UI Routes
+
+### Phase 3 - UI Development
+- Ensure UI has all [Core Features](mdc:#core-features) (make sure to follow [Established rules and patterns](mdc:#established-rules-and-patterns))
+
+### Phase 4 - Polish
+- Ensure mobile responsiveness
+- Add loading state
+- Add optmistic UI
+- Update email templates to use corect domain and content, and their tests
+
+### Phase 5 - Test
+- Add an e2e test for the main user flow for the happy path
+- Add integration and unit tests for the most critical units of code - maximise coverage without adding too much code 
+
+## Core Features
+
+### 1. Restaurant Discovery
+- Display key restaurant information:
+  - Name, cuisine type, price range, rating
+  - Walking distance from your location (or the venue if live location is not avilable) (in minutes)
+  - Address and basic contact info
+  - Direct link to restaurant website/menu if available
+  - Google Maps link for easy navigation
+- Simple filtering options:
+  - Distance (1mi, 2mi, 5mi, 10mi)
+  - Rating (above 1, 2, 3, or 4 stars)
+  - Price range (all, $, $$, $$$ or $$$$)
+- Two main views:
+  - Map view:
+    - Interactive map with restaurant pins - the pins should show the attendee count on them
+    - The restaurant you are attending should be green
+    - Your live location (or venue location as fallback)
+    - The live location marker on the map should a koala emoji
+  - List view: 
+    - Filterable list with restaurant cards
+- Persistent header with:
+  - Countdown timer 'XX:XX left until you have dinner on your own'
+  - Quick filter toggle buttons to filter list and map results
+
+### 2. Attendee Coordination
+- "Join dinner" button for each restaurant
+- Display real-time count of attendees going to each place
+- Once attending a dinner group
+  - you can add a small note/comment ("Meeting in lobby at 7pm") that other attendees can see
+  - you can leave the dinner group 
+  - you can only be a part of one dinner group at a time
+
+## Technical Implementation
+
+### Database Schema
+- **Restaurants** (cached from API):
+  - id, name, address, cuisineType, priceLevel, rating, lat, lng, photoUrl, mapsUrl, websiteUrl
+- **DinnerGroups**:
+  - id, restaurantId, notes, createdAt
+- **Attendees**:
+  - id, userId, dinnerGroupId, createdAt
+
+### Required APIs 
+- Google Places API
+  - to find restaurants near the users current location 
+  - use tiered caching with 24-hour TTL and database persistence
+- Resend API so users can sign up via email 
+- Use geolocation API in the client to get user's live location
+
+
+### UI
+- have a dashboard route
+- the use should be able to navigate to the dashboard via the dropdown menu in the navbar
+
+### Types
+- Use official google maps types instead of writing our own
+- Put external type declarations in ./types/deps.d.ts
+
+### Deployment
+- Custom domain is dinnernotonyourown.com, provided by Cloudflare
+
+
+## Technical Information
+
+### Established rules and patterns
+
+#### File structure
+- Use '#app/..' imports instead of relative imports
+- Reusable db queries: utils/
+- External API services: utils/providers/[service-name].server.ts
+- Resource routes: routes/resources+/[resource-name].tsx
+- User Resource routes for:
+  - shared internal functionality
+  - public APIs
+  - operations involving multiple sources or complex logic that should be encapsulated
+- functionality related to a specific route should live directly in that route's loader and action
+
+### Data fetching
+- APIs should be wrapped in resource routes with tiered caching to optimize quota usage
+- Implement tiered caching (memory → database) with appropriate TTLs
+- UI components call resource routes via React Router's useFetcher
+- Pass filters from UI as URL parameters to resource routes
+
+#### User Interface
+- Clean, responsive design using shadcn/ui components
+- Mobile-first approach
+- Implement new feature route/s in users/$user/
+- Centralize shared components 
+  - add organism components to /componenets
+  - add atoms and molecules to /components/ui
+- Loading states and optimistic UI should use suspense and promise responses from the server functions
+- Use shadcn components where possible. Only import new radix primitives when needed. Avoid importing radix components directly - they should only be used as part of components in components/ui and used in the app from there.
+- Use Zod for schema validation together with Conform for handling all Forms
+
+#### General
+- Use React Router 7 - DO NOT use Remix imports
+  - returning json({}) from server functions is deprecated, just return the object directly
+- Use React Routers server side loaders and actions for state management - DO NOT use client side state or fetching
+
+#### Other
+-  Add any new/custom patterns here
+
+### Tech Stack
+- **Foundation:** Kent C. Dodds' Epic Stack
+- **Frontend:**
+  - React
+  - Tailwind CSS
+  - shadcn/ui and Radix UI
+  - Zod schema validation
+  - Conform form handling
+  - remix-flat-routes file based routing
+- **Backend:** 
+  - React Router 7
+- **Database:** 
+  - SQLite
+  - Prisma ORM with TypedSQL support
+- **Authentication:** 
+  - Custom Epic Stack auth with:
+    - Email
+    - Github Oauth
+    - Passkeys
+- **Deployment:** 
+  - Fly.io
+  - Cloudflare DNS provider
+- **Other**
+  - Resend for emails
+  - Sentry for bug monitoring
