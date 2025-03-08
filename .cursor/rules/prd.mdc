@@ -36,9 +36,8 @@ Do one phase at a time. Never start another phase until the current one is compl
 
 ### Phase 2 - Data Fetching and Storage
 1. Add required models to Prisma schema (look at [Database Schema](mdc:#database-schema))
-  1.1. Once you've added the models and run the migrations, run `npx prisma db seed`
+  1.1. Once you've added the models and run the migrations, run `npx prisma db seed` (dont edit the seed file, just run it)
 2. Implement API integrations (look at the @Required APIs)
-  2.1. Once the APIs are set up, test them. We need valid data from the reponses before moving on.
 
 ### Phase 3 - UI Development
 1. Add placeholder UI Routes
@@ -102,8 +101,7 @@ Do one phase at a time. Never start another phase until the current one is compl
 - Use geolocation API in the client to get user's live location
 - Google Places API
   - to find restaurants near the users live location 
-  - use tiered caching with 24-hour TTL and database persistence
-  - 
+  - use offical types from @types/google.maps
 - Resend API so users can sign up via email 
 
 
@@ -112,7 +110,6 @@ Do one phase at a time. Never start another phase until the current one is compl
 - the use should be able to navigate to the dashboard via the dropdown menu in the navbar
 
 ### Types
-- Use official google maps types instead of writing our own
 - Put external type declarations in ./types/deps.d.ts
 
 ### Deployment
