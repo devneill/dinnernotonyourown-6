@@ -9,7 +9,7 @@ alwaysApply: true
 A practical tool for conference attendees to coordinate dinner plans near their live location, demonstrating the power of rapid development using modern tools.
 
 ## Roadmap
-[] Phase 1
+[x] Phase 1
 [] Phase 2
 [] Phase 3
 [] Phase 4
@@ -29,17 +29,21 @@ Do one phase at a time. Never start another phase until the current one is compl
 3. Add required API Keys (look at the [Required APIs](mdc:#required-apis))
   3.1. Add required placeholders to .env.example (because it is used for tests)
   3.2. Add required placeholders to .env and ask me to update them with real values
-  3.2. Once I've added the real keys to .env, deploy them to Fly with `fly secrets set`
+  3.2. Once I've added the real keys to .env, deploy them to Fly with `fly secrets set` (only the keys for the required APIs, ignore the others in the .env.example)
+4. Connect to our custom domain via Cloudflare
+ 4.1. We need to add A, AAAA, CNAME and an Acme challenge records
+ 4.2. Set up the root domain and the www. subdomain
 
-### Phase 2 - Data Fetching & Storage
-1. Connect to our custom domain via Cloudflare
-2. Add required models to Prisma schema (look at [Database Schema](mdc:#database-schema))
-3. Implement API integrations (look at the [Required APIs](mdc:#required-apis))
-4. Add required Resource routes (look at [Core Features](mdc:#core-features)) (make sure to follow [Established rules and patterns](mdc:#established-rules-and-patterns))
-5. Add placeholder UI Routes
+### Phase 2 - Data Fetching and Storage
+1. Add required models to Prisma schema (look at [Database Schema](mdc:#database-schema))
+  1.1. Once you've added the models and run the migrations, run `npx prisma db seed`
+2. Implement API integrations (look at the @Required APIs)
+  2.1. Once the APIs are set up, test them. We need valid data from the reponses before moving on.
 
 ### Phase 3 - UI Development
-- Ensure UI has all [Core Features](mdc:#core-features) (make sure to follow [Established rules and patterns](mdc:#established-rules-and-patterns))
+1. Add placeholder UI Routes
+  1.1. Install any new shadcn/ui components you need (and update #app/lib/utils imports to be #app/utils/misc.tsx)
+2. Ensure UI has all @Core Features (make sure to follow @Established rules and patterns)
 
 ### Phase 4 - Polish
 - Ensure mobile responsiveness
@@ -95,11 +99,12 @@ Do one phase at a time. Never start another phase until the current one is compl
   - id, userId, dinnerGroupId, createdAt
 
 ### Required APIs 
-- Google Places API
-  - to find restaurants near the users current location 
-  - use tiered caching with 24-hour TTL and database persistence
-- Resend API so users can sign up via email 
 - Use geolocation API in the client to get user's live location
+- Google Places API
+  - to find restaurants near the users live location 
+  - use tiered caching with 24-hour TTL and database persistence
+  - 
+- Resend API so users can sign up via email 
 
 
 ### UI
@@ -147,7 +152,7 @@ Do one phase at a time. Never start another phase until the current one is compl
 - Use Zod for schema validation together with Conform for handling all Forms
 
 #### General
-- Use React Router 7 - DO NOT use Remix imports
+- Use React Router 7 - DO NOT USE ANY '@remix-run/*' imports only use 'react-router' imports!
   - returning json({}) from server functions is deprecated, just return the object directly
 - Use React Routers server side loaders and actions for state management - DO NOT use client side state or fetching
 
@@ -164,7 +169,7 @@ Do one phase at a time. Never start another phase until the current one is compl
   - Conform form handling
   - remix-flat-routes file based routing
 - **Backend:** 
-  - React Router 7
+  - React Router
 - **Database:** 
   - SQLite
   - Prisma ORM with TypedSQL support
@@ -175,6 +180,7 @@ Do one phase at a time. Never start another phase until the current one is compl
     - Passkeys
 - **Deployment:** 
   - Fly.io
+    - Use `fly certs` instead of `fly domains` (it is deprecated)
   - Cloudflare DNS provider
 - **Other**
   - Resend for emails
